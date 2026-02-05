@@ -168,3 +168,21 @@ drwxr-xr-x 2 runner runner 4.0K Feb  1 23:09 VPN
 drwxr-xr-x 2 runner runner 4.0K Feb  1 23:09 build
 -rw-r--r-- 1 runner runner 7.8K Feb  1 23:09 directory_listing.txt
 drwxr-xr-x 2 runner runner 4.0K Feb  1 23:09 modules
+total 112K
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 AV
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 Browsers (System)
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 Buisness
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 Developer
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 Images
+-rw-r--r-- 1 runner runner  35K Feb  5 00:28 LICENSE
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 Media
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 Monitoring
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 Network Tools
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 Productivity
+-rw-r--r-- 1 runner runner 4.4K Feb  5 00:28 README.md
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 RMM
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 Tools
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 VPN
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 build
+-rw-r--r-- 1 runner runner 8.7K Feb  5 00:28 directory_listing.txt
+drwxr-xr-x 2 runner runner 4.0K Feb  5 00:28 modules
