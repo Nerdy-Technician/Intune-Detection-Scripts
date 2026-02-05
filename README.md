@@ -1,4 +1,4 @@
-# Intune Detection Scripts for EXE Software
+![Intune](/Images/Intune.png)
 
 Welcome to the repository for Intune Detection Scripts for EXE Software. This repository contains PowerShell scripts designed to detect the presence of specific executable software on client machines managed by Microsoft Intune.
 
