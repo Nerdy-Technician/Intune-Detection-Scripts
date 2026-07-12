@@ -1,49 +1,90 @@
+[CmdletBinding()]
 param(
+    [ValidatePattern('^v?\d+\.\d+\.\d+$')]
     [string]$Version,
-    [string]$OutputDir = "output"
+
+    [string]$OutputDir = 'output'
 )
 
-if (-not $Version) {
-    # Auto version: increment build number based on existing tags or use timestamp fallback
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+function Get-NextVersion {
     try {
         $tags = git tag 2>$null | Where-Object { $_ -match '^v[0-9]+\.[0-9]+\.[0-9]+$' }
-        if ($tags) {
-            $latest = ($tags | Sort-Object { $_ -replace 'v','' -as [version] } | Select-Object -Last 1)
-            $vObj = [version]($latest -replace 'v','')
-            $next = [version]::new($vObj.Major, $vObj.Minor, $vObj.Build + 1)
-            $Version = "v$($next.ToString())"
-        } else {
-            $Version = 'v1.0.0'
+        if (-not $tags) {
+            return 'v1.0.0'
         }
-    } catch { $Version = 'v1.0.0' }
+
+        $latest = $tags |
+            Sort-Object { [version]($_ -replace '^v', '') } |
+            Select-Object -Last 1
+
+        $latestVersion = [version]($latest -replace '^v', '')
+        return "v$([version]::new($latestVersion.Major, $latestVersion.Minor, $latestVersion.Build + 1))"
+    }
+    catch {
+        return 'v1.0.0'
+    }
+}
+
+if (-not $Version) {
+    $Version = Get-NextVersion
+}
+elseif ($Version -notmatch '^v') {
+    $Version = "v$Version"
 }
 
 $root = Split-Path $PSScriptRoot -Parent
 $out = Join-Path $PSScriptRoot $OutputDir
-if (Test-Path $out) { Remove-Item $out -Recurse -Force }
+$ignoredDirectories = @('.git', '.github', 'build', 'Images')
+
+if (Test-Path $out) {
+    Remove-Item $out -Recurse -Force
+}
+
 New-Item -ItemType Directory -Path $out | Out-Null
 
-# Copy relevant folders
-$copyItems = @('modules','AV','Browsers (System)','Buisness','Developer','Media','Monitoring','Network Tools','Productivity','RMM','Tools','VPN')
-foreach ($item in $copyItems) {
-    $src = Join-Path $root $item
-    if (Test-Path $src) { Copy-Item $src (Join-Path $out $item) -Recurse -Force }
+$categoryDirectories = Get-ChildItem -Path $root -Directory |
+    Where-Object { $ignoredDirectories -notcontains $_.Name } |
+    Where-Object {
+        $_.Name -eq 'modules' -or
+        (Get-ChildItem -Path $_.FullName -Filter '*.ps1' -File -Recurse -ErrorAction SilentlyContinue)
+    } |
+    Sort-Object Name
+
+foreach ($directory in $categoryDirectories) {
+    Copy-Item -Path $directory.FullName -Destination (Join-Path $out $directory.Name) -Recurse -Force
 }
 
-# Manifest
-$scripts = Get-ChildItem -Path $out -Filter *.ps1 -Recurse | Select-Object -ExpandProperty FullName
+$scripts = Get-ChildItem -Path $out -Filter '*.ps1' -File -Recurse |
+    Where-Object { $_.FullName -notlike "*$([IO.Path]::DirectorySeparatorChar)$OutputDir$([IO.Path]::DirectorySeparatorChar)*" } |
+    Sort-Object FullName |
+    ForEach-Object {
+        [PSCustomObject]@{
+            Path     = [IO.Path]::GetRelativePath($out, $_.FullName).Replace('\', '/')
+            Category = Split-Path ([IO.Path]::GetRelativePath($out, $_.FullName)) -Parent
+            Name     = $_.BaseName
+        }
+    }
+
 $manifest = [PSCustomObject]@{
     PackageVersion = $Version
-    BuildTimeUtc   = (Get-Date).ToUniversalTime().ToString('u')
-    ScriptCount    = $scripts.Count
+    BuildTimeUtc   = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    ScriptCount    = @($scripts).Count
+    Scripts        = $scripts
 }
-$manifest | ConvertTo-Json -Depth 3 | Out-File (Join-Path $out 'manifest.json') -Encoding utf8
 
-# Create zip
+$manifestPath = Join-Path $out 'manifest.json'
+$manifest | ConvertTo-Json -Depth 5 | Out-File -FilePath $manifestPath -Encoding utf8
+
 $zipName = "Intune-Detection-Scripts-$Version.zip"
 $zipPath = Join-Path $out $zipName
-Compress-Archive -Path "$out/*" -DestinationPath $zipPath -Force
+$archiveItems = Get-ChildItem -Path $out | Where-Object { $_.FullName -ne $zipPath }
+Compress-Archive -Path $archiveItems.FullName -DestinationPath $zipPath -Force
+
 Write-Output "Created $zipPath"
 
-# Output version for GitHub Actions
-Write-Output "::set-output name=package_version::$Version"
+if ($env:GITHUB_OUTPUT) {
+    "package_version=$Version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+}

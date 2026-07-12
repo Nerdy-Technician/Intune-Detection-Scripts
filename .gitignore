@@ -1,0 +1,8 @@
+build/output/
+*.zip
+
+# Local PowerShell/editor state
+.vscode/
+.idea/
+*.swp
+*.swo

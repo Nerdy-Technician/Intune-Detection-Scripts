@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: windows-latest
@@ -13,6 +16,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Validate Repository
+        shell: pwsh
+        run: ./build/Test-Repository.ps1
       - name: Compute & Bump Version
         id: version
         shell: pwsh
