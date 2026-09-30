@@ -9,3 +9,4 @@ if (Test-Path $exePath) {
 else {
     Write-Output "Wazuh Agent is NOT installed."
     exit 1 
+}
