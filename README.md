@@ -11,21 +11,21 @@ The scripts are grouped by application type and can be used individually or pack
 
 ## Contents
 
+<!-- INDEX:START -->
 | Category | Scripts |
 | --- | ---: |
-| AV | 2 |
-| Browsers (System) | 3 |
-| Buisness | 1 |
-| Developer | 13 |
-| Media | 3 |
-| Monitoring | 1 |
-| Network Tools | 1 |
-| Productivity | 17 |
-| RMM | 8 |
-| Tools | 14 |
-| VPN | 6 |
-
-> Note: `Buisness` is kept as-is for compatibility with existing paths.
+| [AV](./AV/) | 2 |
+| [Browsers (System)](./Browsers%20%28System%29/) | 3 |
+| [Business](./Business/) | 1 |
+| [Developer](./Developer/) | 13 |
+| [Media](./Media/) | 3 |
+| [Monitoring](./Monitoring/) | 1 |
+| [Network Tools](./Network%20Tools/) | 1 |
+| [Productivity](./Productivity/) | 17 |
+| [RMM](./RMM/) | 8 |
+| [Tools](./Tools/) | 14 |
+| [VPN](./VPN/) | 6 |
+<!-- INDEX:END -->
 
 ## Usage
 
@@ -52,6 +52,12 @@ Run repository validation before opening a pull request:
 
 ```powershell
 pwsh ./build/Test-Repository.ps1
+```
+
+Regenerate the Contents table after adding, removing, or renaming a category folder or script:
+
+```powershell
+pwsh ./build/Update-ReadmeIndex.ps1
 ```
 
 Create a release package locally:
