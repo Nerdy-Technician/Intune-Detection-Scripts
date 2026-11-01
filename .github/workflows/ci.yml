@@ -14,26 +14,33 @@ concurrency:
 
 jobs:
   powershell:
-    name: PowerShell (PSScriptAnalyzer errors)
+    name: PowerShell (syntax + PSScriptAnalyzer)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Analyze PowerShell scripts
+        with:
+          persist-credentials: false
+      # Local: pwsh ./build/Invoke-Lint.ps1
+      - name: Syntax check + PSScriptAnalyzer (PSScriptAnalyzerSettings.psd1)
         shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
-            Set-PSRepository PSGallery -InstallationPolicy Trusted
-            Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
-          }
-          $files = git ls-files | Where-Object { $_ -match '\.(ps1|psm1|psd1)$' }
-          $failed = 0
-          foreach ($file in $files) {
-            foreach ($r in Invoke-ScriptAnalyzer -Path $file -Severity Error) {
-              $failed++
-              Write-Output "::error file=$file,line=$($r.Line)::[$($r.RuleName)] $($r.Message)"
-            }
-          }
-          Write-Output "Analyzed $($files.Count) PowerShell files, $failed error(s)."
-          if ($failed -gt 0) { exit 1 }
+        run: ./build/Invoke-Lint.ps1
+      # Local: pwsh ./tests/Test-DetectionCommon.ps1
+      - name: DetectionCommon self-test
+        shell: pwsh
+        run: ./tests/Test-DetectionCommon.ps1
+
+  module-windows:
+    name: DetectionCommon on Windows (5.1 + 7)
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Self-test (PowerShell 7)
+        shell: pwsh
+        run: ./tests/Test-DetectionCommon.ps1
+      - name: Self-test (Windows PowerShell 5.1)
+        shell: powershell
+        run: ./tests/Test-DetectionCommon.ps1

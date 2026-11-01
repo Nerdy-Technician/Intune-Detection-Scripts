@@ -37,7 +37,7 @@ elseif ($Version -notmatch '^v') {
 
 $root = Split-Path $PSScriptRoot -Parent
 $out = Join-Path $PSScriptRoot $OutputDir
-$ignoredDirectories = @('.git', '.github', 'build', 'Images')
+$ignoredDirectories = @('.git', '.github', 'build', 'Images', 'templates', 'tests')
 
 if (Test-Path $out) {
     Remove-Item $out -Recurse -Force
